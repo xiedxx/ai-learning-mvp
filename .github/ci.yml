@@ -1,0 +1,66 @@
+name: CI/CD
+
+
+on:
+push:
+branches: [ "main" ]
+pull_request:
+branches: [ "main" ]
+
+
+jobs:
+build:
+runs-on: ubuntu-latest
+strategy:
+matrix:
+service: [frontend, backend, ai_service]
+steps:
+- name: Checkout code
+uses: actions/checkout@v3
+
+
+- name: Set up Docker Buildx
+uses: docker/setup-buildx-action@v2
+
+
+- name: Log in to GitHub Container Registry
+uses: docker/login-action@v2
+with:
+registry: ghcr.io
+username: ${{ github.actor }}
+password: ${{ secrets.GITHUB_TOKEN }}
+
+
+- name: Build and Push ${{ matrix.service }}
+uses: docker/build-push-action@v4
+with:
+context: ./${{ matrix.service }}
+push: true
+tags: ghcr.io/${{ github.repository }}/${{ matrix.service }}:latest
+
+
+deploy-staging:
+runs-on: ubuntu-latest
+needs: build
+if: github.ref == 'refs/heads/main'
+steps:
+- name: Checkout code
+uses: actions/checkout@v3
+
+
+- name: Set up kubectl
+uses: azure/setup-kubectl@v3
+with:
+version: 'latest'
+
+
+- name: Set up Helm
+uses: azure/setup-helm@v3
+
+
+- name: Deploy via Helm
+run: |
+helm upgrade --install my-workstation ./infra/k8s \
+--set imageFrontend=ghcr.io/${{ github.repository }}/frontend:latest \
+--set imageBackend=ghcr.io/${{ github.repository }}/backend:latest \
+--set imageAI=ghcr.io/${{ github.repository }}/ai_service:latest
