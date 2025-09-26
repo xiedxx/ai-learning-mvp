@@ -84,3 +84,7 @@ async def chat(data: dict):
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+@app.options("/{path:path}")
+async def options_handler(path: str):
+    return Response(status_code=204)
