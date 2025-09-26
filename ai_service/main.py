@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import hmac, hashlib, base64, os, time, redis
+import logging
+
 
 app = FastAPI()
 
@@ -38,8 +40,8 @@ SKEW = int(os.getenv("SIGN_SKEW_SECONDS", "300"))
 # HMAC 验证依赖
 async def verify_hmac(request: Request):
 
-    if request.method == "OPTIONS":
-        return;  # 跳过预检请求
+    logging.info(f"Headers: {dict(request.headers)}")
+
     headers = request.headers
     client_id = headers.get("X-Client-Id")
     ts = headers.get("X-Timestamp")
@@ -80,7 +82,7 @@ async def verify_hmac(request: Request):
 # 聊天接口
 @app.post("/chat")
 async def chat(data: dict,request: Request):
-    # await verify_hmac(request)   # 显式调用
+    await verify_hmac(request)   # 显式调用
     prompt = data.get("prompt", "")
     return {"response": f"AI says: {prompt[::-1]}"}
 
