@@ -12,12 +12,15 @@ origins = [o.strip() for o in cors_origins.split(",") if o.strip()]
 if not origins:
     origins = ["*"]
     
+print("🚀 Loaded CORS_ORIGINS:", origins)  # 调试用，部署后会在日志看到
+
+
 # ⚡ 明确写出 OPTIONS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # 允许所有域
+    allow_origins=origins,            # 可以改成 ["*"] 测试是否生效
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
