@@ -18,7 +18,7 @@ print("🚀 Loaded CORS_ORIGINS:", origins)  # 调试用，部署后会在日志
 # ⚡ 明确写出 OPTIONS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,            # 可以改成 ["*"] 测试是否生效
+    allow_origins=["*"],            # 可以改成 ["*"] 测试是否生效
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
