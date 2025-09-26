@@ -1,20 +1,57 @@
+"use client";
+import { useState } from "react";
+import { getUsers } from "@/lib/api.backend";
+import { chat } from "@/lib/api.ai";
+
 export default function Page() {
+  const [users, setUsers] = useState<any[]>([]);
+  const [aiResp, setAiResp] = useState("");
+
+  const handleUsers = async () => {
+    try {
+      const res = await getUsers();
+      setUsers(res);
+    } catch (e:any) {
+      alert("Error: " + e.message);
+    }
+  };
+
+  const handleChat = async () => {
+    try {
+      const res = await chat("Hello AI");
+      setAiResp(res.response);
+    } catch (e:any) {
+      alert("Error: " + e.message);
+    }
+  };
+
   return (
-    <section className="text-center">
-      <h2 className="text-3xl font-bold text-blue-600 mb-4">
-        欢迎来到 AI Workstation 🚀
-      </h2>
-      <p className="text-gray-700">
-        这是一个基于 Next.js + TailwindCSS 的最小演示页面。
-      </p>
-      <div className="mt-6 flex justify-center gap-4">
-        <button className="rounded bg-blue-600 px-6 py-2 text-white hover:bg-blue-500">
-          开始使用
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-bold text-blue-600">Demo: 三服务联通</h1>
+
+      <div>
+        <button
+          onClick={handleUsers}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-500"
+        >
+          获取用户
         </button>
-        <button className="rounded border border-blue-600 px-6 py-2 text-blue-600 hover:bg-blue-50">
-          了解更多
-        </button>
+        <ul className="mt-4 space-y-1">
+          {users.map(u => (
+            <li key={u.id}>{u.name} ({u.email})</li>
+          ))}
+        </ul>
       </div>
-    </section>
+
+      <div>
+        <button
+          onClick={handleChat}
+          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500"
+        >
+          发送聊天
+        </button>
+        {aiResp && <p className="mt-2 text-gray-700">AI: {aiResp}</p>}
+      </div>
+    </div>
   );
 }

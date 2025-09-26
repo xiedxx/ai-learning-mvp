@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Next.js + Tailwind CSS Demo",
 };
 
+
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">

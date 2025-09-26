@@ -1,33 +1,36 @@
-import { ApiResult } from "@/types";
-import { ENV } from "@/lib/env";
+import { sha256, hmacSHA256Base64 } from "./crypto";
 
-type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+const CLIENT_ID = process.env.NEXT_PUBLIC_CLIENT_ID!;
+const SIGN_KEY = process.env.NEXT_PUBLIC_SIGN_KEY!;
 
-export async function request<T>(baseUrl: string, path: string, opts?: { method?: HttpMethod; body?: any; headers?: Record<string,string> }): Promise<ApiResult<T>> {
-  try {
-    const url = `${baseUrl}${path}`;
-    const { method = "GET", body, headers = {} } = opts || {};
-    const res = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        // ...(ENV.TOKEN ? { Authorization: `Bearer ${ENV.TOKEN}` } : {}),
-        ...headers,
-      },
-      body: body ? JSON.stringify(body) : undefined,
-      // 需要跨域凭据可加：credentials: "include",
-      // Next.js 15 可用 fetch 缓存策略: cache: "no-store"
-    });
+async function sign(path: string, method: string, body?: any) {
+  const ts = Math.floor(Date.now()/1000).toString();
+  const nonce = crypto.randomUUID().replace(/-/g, "");
+  const bodyJson = body ? JSON.stringify(body) : "";
+  const bodyHash = await sha256(bodyJson);
+  const canonical = [method, path, "", bodyHash, ts, nonce].join("\n");
+  const sig = await hmacSHA256Base64(SIGN_KEY, canonical);
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      return { ok: false, error: text || res.statusText, status: res.status };
-    }
-    const data = (await res.json()) as T;
-    return { ok: true, data };
-  } catch (e: any) {
-    return { ok: false, error: e?.message || "Network error" };
-  }
+
+  const headers: Record<string,string> = {
+    "Content-Type": "application/json",
+    "X-Client-Id": CLIENT_ID,
+    "X-Timestamp": ts,
+    "X-Nonce": nonce,
+    "X-Signature": sig,
+  };
+  return { headers, body: bodyJson };
 }
 
-// 也可加入重试：指数退避、超时、AbortController 等（需要的话我再补全）
+export async function request<T>(opts: {
+  base: string; // base URL
+  path: string;
+  method?: string;
+  body?: any;
+}): Promise<T> {
+  const method = opts.method ?? "GET";
+  const { headers, body } = await sign(opts.path, method, opts.body);
+  const res = await fetch(`${opts.base}${opts.path}`, { method, headers, body: body || undefined });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json() as Promise<T>;
+}

@@ -1,19 +1,17 @@
-version: "3.9"
-
 services:
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
     ports:
       - "3000:3000"
-    environment:
-      NEXT_PUBLIC_BACKEND_BASE_URL: http://backend:80
-      NEXT_PUBLIC_AI_BASE_URL: http://ai_service:5000
-      NEXT_PUBLIC_CLIENT_ID: web_mvp
-      NEXT_SIGN_KEY: replace-with-dev-only-key
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
       - ai_service
-      - redis
   backend:
     build:
       context: ./backend
@@ -23,7 +21,7 @@ services:
       - ./backend:/var/www/html
     depends_on:
       - redis
-
+ 
   nginx:
    image: nginx:alpine
    container_name: nginx
@@ -37,19 +35,20 @@ services:
      - ai_service
 
   ai_service:
-    build: ./ai_service
+    build:
+      context: ./ai_service
+      dockerfile: Dockerfile
+    container_name: ai_service
     ports:
       - "5000:5000"
-    environment:
-      API_CLIENT_ID: web_mvp
-      API_SIGN_KEY: replace-with-dev-only-key
-      SIGN_SKEW_SECONDS: 300
-      REDIS_HOST: redis
+    volumes:
+      - ./ai_service:/app
     depends_on:
       - redis
 
   redis:
-    image: redis:7
+    image: redis:alpine
+    container_name: redis
     ports:
       - "6379:6379"
 
