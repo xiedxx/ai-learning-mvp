@@ -28,11 +28,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Redis 连接
-r = redis.Redis(
-    host=os.getenv("REDIS_HOST", "localhost"),
-    port=int(os.getenv("REDIS_PORT", "6379"))
-)
 
 # 签名配置
 CLIENT_ID = os.getenv("API_CLIENT_ID", "web_mvp")
@@ -79,9 +74,7 @@ async def verify_hmac(request: Request):
     if not hmac.compare_digest(server_sig, sig):
         raise HTTPException(401, "Bad signature")
 
-    key = f"nonce:{client_id}:{ts}:{nonce}"
-    if not r.set(key, "1", nx=True, ex=SKEW):
-        raise HTTPException(401, "Replay detected")
+
 
 # 聊天接口
 @app.post("/chat")
