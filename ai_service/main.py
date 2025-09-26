@@ -91,4 +91,4 @@ async def health():
 
 @app.options("/{path:path}")
 async def options_handler(path: str):
-    return Response(status_code=204)
+    return {"status-code": "204"}
