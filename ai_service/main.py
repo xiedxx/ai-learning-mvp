@@ -37,6 +37,7 @@ SKEW = int(os.getenv("SIGN_SKEW_SECONDS", "300"))
 
 # HMAC 验证依赖
 async def verify_hmac(request: Request):
+    
     headers = request.headers
     client_id = headers.get("X-Client-Id")
     ts = headers.get("X-Timestamp")
@@ -77,6 +78,7 @@ async def verify_hmac(request: Request):
 # 聊天接口
 @app.post("/chat")
 async def chat(data: dict):
+    await verify_hmac(request)   # 显式调用
     prompt = data.get("prompt", "")
     return {"response": f"AI says: {prompt[::-1]}"}
 
