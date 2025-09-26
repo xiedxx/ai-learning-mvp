@@ -80,7 +80,7 @@ async def verify_hmac(request: Request):
 # 聊天接口
 @app.post("/chat")
 async def chat(data: dict,request: Request):
-    await verify_hmac(request)   # 显式调用
+    # await verify_hmac(request)   # 显式调用
     prompt = data.get("prompt", "")
     return {"response": f"AI says: {prompt[::-1]}"}
 
