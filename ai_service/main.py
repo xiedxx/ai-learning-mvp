@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import hmac, hashlib, base64, os, time, redis
-import logging
 
 
 app = FastAPI()
@@ -40,7 +39,7 @@ SKEW = int(os.getenv("SIGN_SKEW_SECONDS", "300"))
 # HMAC 验证依赖
 async def verify_hmac(request: Request):
 
-    logging.info(f"Headers: {dict(request.headers)}")
+    print(f"Headers: {dict(request.headers)}")  # 调试用，部署后会在日志看到
 
     headers = request.headers
     client_id = headers.get("X-Client-Id")
@@ -84,6 +83,8 @@ async def verify_hmac(request: Request):
 async def chat(data: dict,request: Request):
     await verify_hmac(request)   # 显式调用
     prompt = data.get("prompt", "")
+    print(f"Nearfinish: {prompt}")  # 调试用，部署后会在日志看到
+
     return {"response": f"AI says: {prompt[::-1]}"}
 
 # 健康检查接口（方便确认服务是否启动）
