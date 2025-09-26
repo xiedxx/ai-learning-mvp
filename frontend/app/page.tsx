@@ -3,25 +3,40 @@ import { useState } from "react";
 import { getUsers } from "@/lib/api.backend";
 import { chat } from "@/lib/api.ai";
 
+// 定义 User 类型
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
 export default function Page() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [aiResp, setAiResp] = useState("");
 
   const handleUsers = async () => {
     try {
-      const res = await getUsers();
+      const res: User[] = await getUsers();
       setUsers(res);
-    } catch (e:any) {
-      alert("Error: " + e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        alert("Error: " + e.message);
+      } else {
+        alert("Unknown error");
+      }
     }
   };
 
   const handleChat = async () => {
     try {
-      const res = await chat("Hello AI");
+      const res: { response: string } = await chat("Hello AI");
       setAiResp(res.response);
-    } catch (e:any) {
-      alert("Error: " + e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        alert("Error: " + e.message);
+      } else {
+        alert("Unknown error");
+      }
     }
   };
 
@@ -37,8 +52,10 @@ export default function Page() {
           获取用户
         </button>
         <ul className="mt-4 space-y-1">
-          {users.map(u => (
-            <li key={u.id}>{u.name} ({u.email})</li>
+          {users.map((u) => (
+            <li key={u.id}>
+              {u.name} ({u.email})
+            </li>
           ))}
         </ul>
       </div>
