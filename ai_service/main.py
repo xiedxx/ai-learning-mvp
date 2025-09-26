@@ -37,7 +37,9 @@ SKEW = int(os.getenv("SIGN_SKEW_SECONDS", "300"))
 
 # HMAC 验证依赖
 async def verify_hmac(request: Request):
-    
+
+    if request.method == "OPTIONS":
+        return;  # 跳过预检请求
     headers = request.headers
     client_id = headers.get("X-Client-Id")
     ts = headers.get("X-Timestamp")
