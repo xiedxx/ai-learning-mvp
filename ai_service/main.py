@@ -78,7 +78,8 @@ async def verify_hmac(request: Request):
 @app.post("/chat", dependencies=[Depends(verify_hmac)])
 async def chat(data: dict):
     prompt = data.get("prompt", "")
-    return {"response": f"AI says: {prompt[::-1]}"}
+    return JSONResponse({"response": f"AI says: {prompt[::-1]}"})
+
 
 # 健康检查接口（方便确认服务是否启动）
 @app.get("/health")
