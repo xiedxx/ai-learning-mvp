@@ -35,47 +35,47 @@ CLIENT_ID = os.getenv("API_CLIENT_ID", "web_mvp")
 SIGN_KEY = os.getenv("API_SIGN_KEY", "replace-with-dev-only-key")
 SKEW = int(os.getenv("SIGN_SKEW_SECONDS", "300"))
 
-# HMAC 验证依赖
-async def verify_hmac(request: Request):
-    headers = request.headers
-    client_id = headers.get("X-Client-Id")
-    ts = headers.get("X-Timestamp")
-    nonce = headers.get("X-Nonce")
-    sig = headers.get("X-Signature")
+# # HMAC 验证依赖
+# async def verify_hmac(request: Request):
+#     headers = request.headers
+#     client_id = headers.get("X-Client-Id")
+#     ts = headers.get("X-Timestamp")
+#     nonce = headers.get("X-Nonce")
+#     sig = headers.get("X-Signature")
 
-    if not all([client_id, ts, nonce, sig]):
-        raise HTTPException(400, "Missing signature")
-    if client_id != CLIENT_ID:
-        raise HTTPException(401, "Bad client")
+#     if not all([client_id, ts, nonce, sig]):
+#         raise HTTPException(400, "Missing signature")
+#     if client_id != CLIENT_ID:
+#         raise HTTPException(401, "Bad client")
 
-    now = int(time.time())
-    ts_int = int(ts)
-    if abs(now - ts_int) > SKEW:
-        raise HTTPException(401, "Timestamp skew")
+#     now = int(time.time())
+#     ts_int = int(ts)
+#     if abs(now - ts_int) > SKEW:
+#         raise HTTPException(401, "Timestamp skew")
 
-    body = await request.body()
-    body_hash = hashlib.sha256(body).hexdigest()
-    canonical = "\n".join([
-        request.method.upper(),
-        request.url.path,
-        "",
-        body_hash,
-        ts,
-        nonce
-    ])
-    server_sig = base64.b64encode(
-        hmac.new(SIGN_KEY.encode(), canonical.encode(), hashlib.sha256).digest()
-    ).decode()
+#     body = await request.body()
+#     body_hash = hashlib.sha256(body).hexdigest()
+#     canonical = "\n".join([
+#         request.method.upper(),
+#         request.url.path,
+#         "",
+#         body_hash,
+#         ts,
+#         nonce
+#     ])
+#     server_sig = base64.b64encode(
+#         hmac.new(SIGN_KEY.encode(), canonical.encode(), hashlib.sha256).digest()
+#     ).decode()
 
-    if not hmac.compare_digest(server_sig, sig):
-        raise HTTPException(401, "Bad signature")
+#     if not hmac.compare_digest(server_sig, sig):
+#         raise HTTPException(401, "Bad signature")
 
-    key = f"nonce:{client_id}:{ts}:{nonce}"
-    if not r.set(key, "1", nx=True, ex=SKEW):
-        raise HTTPException(401, "Replay detected")
+#     key = f"nonce:{client_id}:{ts}:{nonce}"
+#     if not r.set(key, "1", nx=True, ex=SKEW):
+#         raise HTTPException(401, "Replay detected")
 
 # 聊天接口
-@app.post("/chat", dependencies=[Depends(verify_hmac)])
+@app.post("/chat")
 async def chat(data: dict):
     prompt = data.get("prompt", "")
     return JSONResponse({"response": f"AI says: {prompt[::-1]}"})
