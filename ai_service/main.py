@@ -35,7 +35,7 @@ CLIENT_ID = os.getenv("API_CLIENT_ID", "web_mvp")
 SIGN_KEY = os.getenv("API_SIGN_KEY", "replace-with-dev-only-key")
 SKEW = int(os.getenv("SIGN_SKEW_SECONDS", "300"))
 
-# # HMAC 验证依赖
+# HMAC 验证依赖
 # async def verify_hmac(request: Request):
 #     headers = request.headers
 #     client_id = headers.get("X-Client-Id")
@@ -78,8 +78,7 @@ SKEW = int(os.getenv("SIGN_SKEW_SECONDS", "300"))
 @app.post("/chat")
 async def chat(data: dict):
     prompt = data.get("prompt", "")
-    return JSONResponse({"response": f"AI says: {prompt[::-1]}"})
-
+    return {"response": f"AI says: {prompt[::-1]}"}
 
 # 健康检查接口（方便确认服务是否启动）
 @app.get("/health")
