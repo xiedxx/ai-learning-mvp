@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-import hmac, hashlib, base64, os, time, redis
+import hmac, hashlib, base64, os, time
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -15,9 +15,6 @@ origins = [o.strip() for o in cors_origins.split(",") if o.strip()]
 # ⚡ 如果 origins 为空，可临时允许全部（开发阶段调试用）
 if not origins:
     origins = ["*"]
-    
-print("🚀 Loaded CORS_ORIGINS:", origins)  # 调试用，部署后会在日志看到
-
 
 # ⚡ 明确写出 OPTIONS
 app.add_middleware(
@@ -37,8 +34,6 @@ SKEW = int(os.getenv("SIGN_SKEW_SECONDS", "300"))
 # HMAC 验证依赖
 async def verify_hmac(request: Request):
 
-    print(f"Headers: {dict(request.headers)}", flush=True)  # 调试用，部署后会在日志看到
-
     headers = request.headers
     client_id = headers.get("X-Client-Id")
     ts = headers.get("X-Timestamp")
@@ -49,9 +44,7 @@ async def verify_hmac(request: Request):
         raise HTTPException(400, "Missing signature")
     if client_id != CLIENT_ID:
         raise HTTPException(401, "Bad client")
-
-    logging.info("22222")
-
+    
     now = int(time.time())
     ts_int = int(ts)
     if abs(now - ts_int) > SKEW:
@@ -81,8 +74,6 @@ async def verify_hmac(request: Request):
 async def chat(data: dict,request: Request):
     await verify_hmac(request)   # 显式调用
     prompt = data.get("prompt", "")
-    print(f"Nearfinish: {prompt}",flush=True)  # 调试用，部署后会在日志看到
-
     return {"response": f"AI says: {prompt[::-1]}"}
 
 # 健康检查接口（方便确认服务是否启动）
