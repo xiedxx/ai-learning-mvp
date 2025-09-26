@@ -4,12 +4,14 @@ import hmac, hashlib, base64, os, time, redis
 
 app = FastAPI()
 
-# 允许的前端来源
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# 从环境变量读取 origins（逗号分隔字符串 → 列表）
+cors_origins = os.getenv("CORS_ORIGINS", "")
+origins = [o.strip() for o in cors_origins.split(",") if o.strip()]
 
+# ⚡ 如果 origins 为空，可临时允许全部（开发阶段调试用）
+if not origins:
+    origins = ["*"]
+    
 # ⚡ 明确写出 OPTIONS
 app.add_middleware(
     CORSMiddleware,
