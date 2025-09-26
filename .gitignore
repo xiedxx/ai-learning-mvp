@@ -1,0 +1,83 @@
+# ============================
+# Node.js / Next.js 忽略规则
+# ============================
+
+# 依赖
+/node_modules
+/.pnp
+.pnp.js
+
+# 输出文件
+/.next
+/out
+/build
+/dist
+
+# Next.js 动态缓存
+/.next/cache
+
+# 调试日志
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 覆盖率测试
+/coverage
+
+# Vercel 本地配置
+.vercel
+
+# MacOS / Windows 杂项
+.DS_Store
+Thumbs.db
+
+# ============================
+# 环境变量文件
+# ============================
+
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ============================
+# Docker 忽略规则
+# ============================
+
+# Docker 构建上下文中不需要的文件
+docker-compose.override.yml
+docker-compose.override.yaml
+*.pid
+*.seed
+*.bak
+*.tmp
+
+# 容器运行时挂载的卷
+data/
+logs/
+tmp/
+
+# ============================
+# 编辑器配置
+# ============================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+# ============================
+# 其他常见
+# ============================
+
+# TypeScript 构建缓存
+*.tsbuildinfo
+.next/types
+
+# 日志
+*.log
+logs/
+
