@@ -2,6 +2,9 @@ from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import hmac, hashlib, base64, os, time, redis
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
 
 app = FastAPI()
 
@@ -39,7 +42,7 @@ SKEW = int(os.getenv("SIGN_SKEW_SECONDS", "300"))
 # HMAC 验证依赖
 async def verify_hmac(request: Request):
 
-    print(f"Headers: {dict(request.headers)}")  # 调试用，部署后会在日志看到
+    print(f"Headers: {dict(request.headers)}", flush=True)  # 调试用，部署后会在日志看到
 
     headers = request.headers
     client_id = headers.get("X-Client-Id")
@@ -51,6 +54,8 @@ async def verify_hmac(request: Request):
         raise HTTPException(400, "Missing signature")
     if client_id != CLIENT_ID:
         raise HTTPException(401, "Bad client")
+
+    logging.info("22222")
 
     now = int(time.time())
     ts_int = int(ts)
@@ -83,7 +88,7 @@ async def verify_hmac(request: Request):
 async def chat(data: dict,request: Request):
     await verify_hmac(request)   # 显式调用
     prompt = data.get("prompt", "")
-    print(f"Nearfinish: {prompt}")  # 调试用，部署后会在日志看到
+    print(f"Nearfinish: {prompt}",flush=True)  # 调试用，部署后会在日志看到
 
     return {"response": f"AI says: {prompt[::-1]}"}
 
